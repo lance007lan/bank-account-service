@@ -15,8 +15,14 @@ A Spring Boot REST service for managing bank accounts.
 - Flyway — maintain database migration schemas
 - Redis — query result caching (10-minute TTL). When a new account is created, the related cache will be evicted.
 - JPA — implement ORM between DB tables and Java DTOs, and JPA query is used to implement search.
-- Validations - Most validations are straightforward, are done by Springboot. The validation of max accounts for a customer is tricky, to avoid racing conditions or inconsistent data, DB triggers are used, which will make sure the insert operation is protected by transactions. 
+- Validations - Most validations are straightforward, are done by Springboot. The validation of max accounts for a customer is tricky, to avoid racing conditions or inconsistent data, DB triggers are used, which will make sure the insert operation is protected by transactions.
+- Circuit Breaker - handles DB unavailability error. When DB is not available, we will trigger circuit break open and for next 5 mins the Java application will always return the same 5xx response.
 
+
+## More to consider
+- Infrastructure setup, for example K8s
+- Authentication, might be machine to machine OAuth2 flow
+- Api Gateway and load balancer
 
 ## Test
 - Unit tests are written to only validate validation logic and a happy scenario, where all dependencies are mocked.
