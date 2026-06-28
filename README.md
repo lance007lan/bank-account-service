@@ -7,7 +7,7 @@ A Spring Boot REST service for managing bank accounts.
 
 - Customer Name is unique id of a customer, which should be maintained by another service
 - When we search accounts, at least one filter parameter must be provided: `accountNumber`, `customerName`, or `accountNickname`, individually or in combination.
-- Does not support pagination yet, which needs more work.
+- Pagination is not supported yet for the GET endpoint, which needs more work.
 
 
 ## Design
