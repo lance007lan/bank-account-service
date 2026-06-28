@@ -13,9 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.ScanOptions;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,8 +28,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final OffensiveWordRepository offensiveWordRepository;
-    private final StringRedisTemplate redisTemplate;
-    private static final String CACHE_PREFIX = "accounts::";
+    private final AccountCacheEvictor cacheEvictor;
     private static final Random RANDOM = new Random();
     private static final String CB = "accountService";
 
@@ -52,37 +48,8 @@ public class AccountService {
         AccountResponse response = toResponse(accountRepository.save(account));
 
         // Whenever a new account is created successfully, the related caches should be invalided.
-        evictRelatedCaches(response);
+        cacheEvictor.evictRelatedCaches(response);
         return response;
-    }
-
-    private void evictRelatedCaches(AccountResponse account) {
-        try {
-            List<String> patterns = new ArrayList<>();
-            // The cache for the account number
-            patterns.add(CACHE_PREFIX + "getAccounts::an=" + account.getAccountNumber() + "|*");
-
-            // the cache for the customer name
-            patterns.add(CACHE_PREFIX + "getAccounts::*|cn=" + account.getCustomerName() + "|*");
-
-            // the cache for the nickname.
-            if (StringUtils.hasText(account.getCustomerNickname())) {
-                patterns.add(CACHE_PREFIX + "getAccounts::*|nn=" + account.getCustomerNickname());
-            }
-            patterns.forEach(this::scanAndDelete);
-        } catch (Exception e) {
-            // Swallow all cache exceptions — a cache failure must not impact the application.
-            log.warn("Cache eviction error: {}", e.getMessage());
-        }
-    }
-
-    private void scanAndDelete(String pattern) {
-        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(5).build();
-        try (Cursor<String> cursor = redisTemplate.scan(options)) {
-            while (cursor.hasNext()) {
-                redisTemplate.delete(cursor.next());
-            }
-        }
     }
 
     @CircuitBreaker(name = CB, fallbackMethod = "getAccountsFallback")

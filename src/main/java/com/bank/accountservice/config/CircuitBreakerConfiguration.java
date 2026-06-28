@@ -19,6 +19,10 @@ public class CircuitBreakerConfiguration {
         );
     }
 
+
+    /**
+     * We only trigger circuit breaker when DB is not accepting connections.
+     */
     private boolean isDbUnavailable(Throwable ex) {
         boolean dbUnavailable = false;
         Throwable cause = ex;

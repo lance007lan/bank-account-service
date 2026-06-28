@@ -17,6 +17,12 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(CircuitBreakerOpenException.class)
+    public ResponseEntity<ErrorRespBody> handleCircuitBreakerOpen(CircuitBreakerOpenException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ErrorRespBody.builder().status(500).error("Service is temporarily unavailable. Please try again later.").build());
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorRespBody> handleValidation(ValidationException ex) {
         return ResponseEntity.badRequest().body(

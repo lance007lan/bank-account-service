@@ -33,7 +33,7 @@ public class RedisConfig implements CachingConfigurer {
                 ObjectMapper.DefaultTyping.NON_FINAL);
 
         return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10))
+                .entryTtl(Duration.ofMinutes(3))
                 .disableCachingNullValues()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
                         new GenericJackson2JsonRedisSerializer(mapper)));
@@ -46,7 +46,9 @@ public class RedisConfig implements CachingConfigurer {
                 .build();
     }
 
-    // Swallow all cache exceptions — a cache failure must not impact the application.
+    /**
+     * Swallow all cache exceptions — a cache failure must not impact the application.
+     */
     @Override
     public CacheErrorHandler errorHandler() {
         return new CacheErrorHandler() {
