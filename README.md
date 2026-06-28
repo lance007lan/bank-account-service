@@ -6,17 +6,17 @@ A Spring Boot REST service for managing bank accounts.
 ## Assumptions
 
 - Customer Name is unique id of a customer, which should be maintained by another service
-- When we search accounts, at least one filter parameters should be provided, customerName, accountNumber, or nickname, one of them or a combination of them.
+- When we search accounts, at least one filter parameter must be provided: `accountNumber`, `customerName`, or `accountNickname`, individually or in combination.
 - Does not support pagination yet, which needs more work.
 
 
 ## Implementation Details
 
 - Flyway — maintain database migration schemas
-- Redis — query result caching (10-minute TTL). When a new account is created, the related cache will be evicted.
+- Redis — query result caching (3-minute TTL). When a new account is created, the related cache is evicted.
 - JPA — implement ORM between DB tables and Java DTOs, and JPA query is used to implement search.
-- Validations - Most validations are straightforward, are done by Springboot. The validation of max accounts for a customer is tricky, to avoid racing conditions or inconsistent data, DB triggers are used, which will make sure the insert operation is protected by transactions.
-- Circuit Breaker - handles DB unavailability error. When DB is not available, we will trigger circuit break open and for next 5 mins the Java application will always return the same 5xx response.
+- Validations — most validations are handled by Spring Boot. The max-accounts-per-customer rule is enforced via a DB trigger to prevent race conditions, ensuring the constraint is protected by the transaction.
+- Circuit Breaker — handles DB unavailability. When DB connectivity fails, the circuit breaker opens and returns a 503 for the next 5 minutes without attempting further DB calls. `DataIntegrityViolationException` (e.g. trigger-enforced business rules) is explicitly excluded from tripping the circuit breaker. The circuit breaker evaluates the failure rate after a minimum of 6 calls within a sliding window of 10.
 
 
 ## More to consider
@@ -30,7 +30,7 @@ A Spring Boot REST service for managing bank accounts.
 
 ### Prerequisites
 
-- Java 21
+- Java 21+
 - Docker — [Colima](https://github.com/abiosoft/colima) or Docker Desktop
 - Maven
 
