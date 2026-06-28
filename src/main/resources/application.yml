@@ -39,6 +39,15 @@ customer-service:
 server:
   port: 8080
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      accountService:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5m
+        permitted-calls-in-half-open-state: 3
+        sliding-window-size: 10
+
 management:
   endpoints:
     web:

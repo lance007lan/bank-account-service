@@ -2,6 +2,8 @@ package com.bank.accountservice.controller;
 
 import com.bank.accountservice.dto.AccountResponse;
 import com.bank.accountservice.dto.CreateAccountRequest;
+import com.bank.accountservice.exception.CircuitBreakerOpenException;
+import com.bank.accountservice.exception.ErrorRespBody;
 import com.bank.accountservice.service.AccountService;
 import com.bank.accountservice.exception.ValidationException;
 import jakarta.validation.Valid;
@@ -23,6 +25,12 @@ public class AccountController {
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(request));
+    }
+
+    @ExceptionHandler(CircuitBreakerOpenException.class)
+    public ResponseEntity<ErrorRespBody> handleCircuitBreakerOpen(CircuitBreakerOpenException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ErrorRespBody.builder().status(500).error("Service is temporarily unavailable. Please try again later.").build());
     }
 
     @GetMapping

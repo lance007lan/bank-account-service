@@ -13,5 +13,4 @@ public class ErrorRespBody {
     private final String timestamp = LocalDateTime.now().toString();
     private final int status;
     private final String error;
-    private final String retryAfter;
 }

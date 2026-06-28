@@ -3,6 +3,7 @@ package com.bank.accountservice.service;
 import com.bank.accountservice.dto.AccountResponse;
 import com.bank.accountservice.dto.CreateAccountRequest;
 import com.bank.accountservice.repository.AccountRepository;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,13 @@ class AccountServiceIntegrationTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private CircuitBreakerRegistry circuitBreakerRegistry;
+
     @BeforeEach
     void setUp() {
         accountRepository.deleteAll();
+        circuitBreakerRegistry.circuitBreaker("accountService").reset();
         redisTemplate.execute((RedisCallback<Void>) conn -> {
             conn.serverCommands().flushAll();
             return null;
