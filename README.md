@@ -10,6 +10,19 @@ A Spring Boot REST service for managing bank accounts.
 - Does not support pagination yet, which needs more work.
 
 
+## Design
+
+```
+                        +------------------------------------------------+
+                        |               Spring Boot App                  |
+  Client  -- REST -->   |  Controller --> Circuit Breaker --> Service    |  -->  PostgreSQL
+                        |                                    |           |
+                        +------------------------------------|------------+
+                                                             |
+                                                           Redis
+                                                   (cache read / write)
+```
+
 ## Implementation Details
 
 - Flyway — maintain database migration schemas
