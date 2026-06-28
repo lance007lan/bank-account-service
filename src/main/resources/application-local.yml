@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bankdb?connectTimeout=2&socketTimeout=3
+    username: bankuser
+    password: bankpass
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+customer-service:
+  base-url: http://localhost:8081
