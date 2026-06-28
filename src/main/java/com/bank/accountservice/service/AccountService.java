@@ -34,15 +34,15 @@ public class AccountService {
 
     @CircuitBreaker(name = CB, fallbackMethod = "createAccountFallback")
     public AccountResponse createAccount(CreateAccountRequest request) {
-        if (StringUtils.hasText(request.getCustomerNickname())
-                && offensiveWordRepository.containsOffensiveWord(request.getCustomerNickname())) {
+        if (StringUtils.hasText(request.getAccountNickname())
+                && offensiveWordRepository.containsOffensiveWord(request.getAccountNickname())) {
             throw new ValidationException("Customer nickname contains offensive language.");
         }
 
         Account account = Account.builder()
                 .accountNumber(generateAccountNumber())
                 .customerName(request.getCustomerName())
-                .customerNickname(request.getCustomerNickname())
+                .accountNickname(request.getAccountNickname())
                 .build();
 
         AccountResponse response = toResponse(accountRepository.save(account));
@@ -54,7 +54,7 @@ public class AccountService {
 
     @CircuitBreaker(name = CB, fallbackMethod = "getAccountsFallback")
     @Cacheable(value = "accounts", keyGenerator = "accountCacheKeyGenerator")
-    public List<AccountResponse> getAccounts(String accountNumber, String customerName, String customerNickname) {
+    public List<AccountResponse> getAccounts(String accountNumber, String customerName, String accountNickname) {
         List<Specification<Account>> specs = new ArrayList<>();
 
         if (StringUtils.hasText(accountNumber)) {
@@ -65,27 +65,27 @@ public class AccountService {
             specs.add((root, query, cb) -> cb.equal(cb.lower(root.get("customerName")), customerName.toLowerCase()));
         }
 
-        if (StringUtils.hasText(customerNickname)) {
-            specs.add((root, query, cb) -> cb.like(cb.lower(root.get("customerNickname")), customerNickname.toLowerCase() + "%"));
+        if (StringUtils.hasText(accountNickname)) {
+            specs.add((root, query, cb) -> cb.like(cb.lower(root.get("accountNickname")), accountNickname.toLowerCase() + "%"));
         }
 
         return accountRepository.findAll(Specification.allOf(specs)).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     private AccountResponse createAccountFallback(CreateAccountRequest request, Exception ex) {
-        if (ex instanceof CallNotPermittedException) {
-            throw new CircuitBreakerOpenException(CB);
-        }
-        if (ex instanceof RuntimeException re) throw re;
-        throw new RuntimeException(ex);
+        throw handleFallback(ex);
     }
 
-    private List<AccountResponse> getAccountsFallback(String accountNumber, String customerName, String customerNickname, Exception ex) {
+    private List<AccountResponse> getAccountsFallback(String accountNumber, String customerName, String accountNickname, Exception ex) {
+        throw handleFallback(ex);
+    }
+
+    private RuntimeException handleFallback(Exception ex) {
         if (ex instanceof CallNotPermittedException) {
             throw new CircuitBreakerOpenException(CB);
         }
-        if (ex instanceof RuntimeException re) throw re;
-        throw new RuntimeException(ex);
+        if (ex instanceof RuntimeException re) return re;
+        return new RuntimeException(ex);
     }
 
     private AccountResponse toResponse(Account account) {
@@ -93,7 +93,7 @@ public class AccountService {
                 .id(account.getId())
                 .accountNumber(account.getAccountNumber())
                 .customerName(account.getCustomerName())
-                .customerNickname(account.getCustomerNickname())
+                .accountNickname(account.getAccountNickname())
                 .createdAt(account.getCreatedAt())
                 .build();
     }

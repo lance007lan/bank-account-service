@@ -67,7 +67,7 @@ class AccountServiceIntegrationTest {
     private CreateAccountRequest request(String customerName, String nickname) {
         CreateAccountRequest req = new CreateAccountRequest();
         req.setCustomerName(customerName);
-        req.setCustomerNickname(nickname);
+        req.setAccountNickname(nickname);
         return req;
     }
 
@@ -86,7 +86,7 @@ class AccountServiceIntegrationTest {
         // then
         assertThat(accountRepository.findById(response.getId())).isPresent().hasValueSatisfying(account -> {
             assertThat(account.getCustomerName()).isEqualTo("Alice Smith");
-            assertThat(account.getCustomerNickname()).isEqualTo("AliceS");
+            assertThat(account.getAccountNickname()).isEqualTo("AliceS");
             assertThat(account.getAccountNumber()).isNotBlank();
         });
     }
@@ -108,7 +108,7 @@ class AccountServiceIntegrationTest {
 
         // when search by nickname (prefix)
         List<AccountResponse> byNickname = accountService.getAccounts(null, null, "Bobby");
-        assertThat(byNickname).hasSize(1).first().extracting(AccountResponse::getCustomerNickname).isEqualTo("BobbyJ");
+        assertThat(byNickname).hasSize(1).first().extracting(AccountResponse::getAccountNickname).isEqualTo("BobbyJ");
         assertThat(redisTemplate.hasKey(cacheKey(null, null, "Bobby"))).isTrue();
 
         // when search combined filters

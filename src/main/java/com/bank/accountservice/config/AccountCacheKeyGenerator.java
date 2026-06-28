@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
-// Cache key format: <methodName>::an=<accountNumber>|cn=<customerName>|nn=<customerNickname>
+// Cache key format: <methodName>::an=<accountNumber>|cn=<customerName>|nn=<accountNickname>
 // Absent values use "_". Example: getAccounts::an=_|cn=Alice Smith|nn=_
 @Component("accountCacheKeyGenerator")
 public class AccountCacheKeyGenerator implements KeyGenerator {

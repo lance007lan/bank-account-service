@@ -11,5 +11,5 @@ public class CreateAccountRequest {
     private String customerName;
 
     @Size(min = 5, max = 30, message = "Customer nickname must be between 5 and 30 characters")
-    private String customerNickname;
+    private String accountNickname;
 }

@@ -29,10 +29,10 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> getAccounts(
             @RequestParam(required = false) String accountNumber,
             @RequestParam(required = false) String customerName,
-            @RequestParam(required = false) String customerNickname) {
-        if (!StringUtils.hasText(accountNumber) && !StringUtils.hasText(customerName) && !StringUtils.hasText(customerNickname)) {
-            throw new ValidationException("At least one filter is required: accountNumber, customerName or customerNickname.");
+            @RequestParam(required = false) String accountNickname) {
+        if (!StringUtils.hasText(accountNumber) && !StringUtils.hasText(customerName) && !StringUtils.hasText(accountNickname)) {
+            throw new ValidationException("At least one filter is required: accountNumber, customerName or accountNickname.");
         }
-        return ResponseEntity.ok(accountService.getAccounts(accountNumber, customerName, customerNickname));
+        return ResponseEntity.ok(accountService.getAccounts(accountNumber, customerName, accountNickname));
     }
 }

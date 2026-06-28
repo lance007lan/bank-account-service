@@ -39,14 +39,14 @@ class AccountControllerTest {
         // given
         CreateAccountRequest request = new CreateAccountRequest();
         request.setCustomerName("Jane Doe");
-        request.setCustomerNickname("JaneyD");
+        request.setAccountNickname("JaneyD");
 
         // when
         AccountResponse response = AccountResponse.builder()
                 .id(UUID.randomUUID())
                 .accountNumber("06-1234-1234567-50")
                 .customerName("Jane Doe")
-                .customerNickname("JaneyD")
+                .accountNickname("JaneyD")
                 .createdAt(LocalDateTime.now())
                 .build();
         when(accountService.createAccount(any())).thenReturn(response);
@@ -77,7 +77,7 @@ class AccountControllerTest {
         // when
         mockMvc.perform(get("/api/v1/accounts"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("At least one filter is required: accountNumber, customerName or customerNickname."));
+                .andExpect(jsonPath("$.error").value("At least one filter is required: accountNumber, customerName or accountNickname."));
     }
 
     @Test
@@ -109,7 +109,7 @@ class AccountControllerTest {
         mockMvc.perform(get("/api/v1/accounts")
                         .param("accountNumber", "06-1234-1234567-50")
                         .param("customerName", "John")
-                        .param("customerNickname", "JD"))
+                        .param("accountNickname","JD"))
                 .andExpect(status().isOk());
     }
 
@@ -120,7 +120,7 @@ class AccountControllerTest {
 
         // when
         // then
-        mockMvc.perform(get("/api/v1/accounts").param("customerNickname", "JaneyD"))
+        mockMvc.perform(get("/api/v1/accounts").param("accountNickname", "JaneyD"))
                 .andExpect(status().isOk());
     }
 }

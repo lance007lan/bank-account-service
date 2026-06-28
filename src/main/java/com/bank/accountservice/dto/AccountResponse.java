@@ -18,6 +18,6 @@ public class AccountResponse implements Serializable {
     private UUID id;
     private String accountNumber;
     private String customerName;
-    private String customerNickname;
+    private String accountNickname;
     private LocalDateTime createdAt;
 }

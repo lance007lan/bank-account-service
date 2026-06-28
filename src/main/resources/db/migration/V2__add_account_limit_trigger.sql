@@ -2,7 +2,8 @@ CREATE OR REPLACE FUNCTION check_account_limit()
 RETURNS TRIGGER AS $$
 BEGIN
     IF (SELECT COUNT(*) FROM accounts WHERE customer_name = NEW.customer_name) >= 5 THEN
-        RAISE EXCEPTION 'Customer already has the maximum of 5 accounts';
+        RAISE EXCEPTION 'Customer already has the maximum of 5 accounts'
+        USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
 END;

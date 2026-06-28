@@ -3,11 +3,7 @@ package com.bank.accountservice.config;
 import io.github.resilience4j.common.circuitbreaker.configuration.CircuitBreakerConfigCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.transaction.CannotCreateTransactionException;
-
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Configuration
 public class CircuitBreakerConfiguration {
@@ -19,29 +15,11 @@ public class CircuitBreakerConfiguration {
         );
     }
 
-
     /**
-     * We only trigger circuit breaker when DB is not accepting connections.
+     * Trip the circuit breaker for all DB exceptions except DataIntegrityViolationException,
+     * which indicates a business rule violation from a DB trigger, not a connectivity issue.
      */
     private boolean isDbUnavailable(Throwable ex) {
-        boolean dbUnavailable = false;
-        Throwable cause = ex;
-        while (cause != null) {
-            if (cause instanceof DataAccessResourceFailureException
-                    || cause instanceof CannotCreateTransactionException) {
-                dbUnavailable = true;
-            }
-            // A connection reset means the DB aborted our connection (e.g. after a trigger exception),
-            // not that the DB is down. Only ConnectException or SocketTimeoutException indicate a real outage.
-            if (cause instanceof ConnectException || cause instanceof SocketTimeoutException) {
-                return true;
-            }
-            if (cause instanceof java.net.SocketException && cause.getMessage() != null
-                    && cause.getMessage().contains("Connection reset")) {
-                return false;
-            }
-            cause = cause.getCause();
-        }
-        return dbUnavailable;
+        return !(ex instanceof DataIntegrityViolationException);
     }
 }

@@ -28,8 +28,8 @@ public class Account {
     @Column(name = "customer_name", nullable = false)
     private String customerName;
 
-    @Column(name = "customer_nickname")
-    private String customerNickname;
+    @Column(name = "account_nickname")
+    private String accountNickname;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
