@@ -16,6 +16,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -54,7 +57,7 @@ public class AccountService {
 
     @CircuitBreaker(name = CB, fallbackMethod = "getAccountsFallback")
     @Cacheable(value = "accounts", keyGenerator = "accountCacheKeyGenerator")
-    public List<AccountResponse> getAccounts(String accountNumber, String customerName, String accountNickname) {
+    public List<AccountResponse> getAccounts(String accountNumber, String customerName, String accountNickname, int limit) {
         List<Specification<Account>> specs = new ArrayList<>();
 
         if (StringUtils.hasText(accountNumber)) {
@@ -69,14 +72,14 @@ public class AccountService {
             specs.add((root, query, cb) -> cb.like(cb.lower(root.get("accountNickname")), accountNickname.toLowerCase() + "%"));
         }
 
-        return accountRepository.findAll(Specification.allOf(specs)).stream().map(this::toResponse).collect(Collectors.toList());
+        return accountRepository.findAll(Specification.allOf(specs), PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     private AccountResponse createAccountFallback(CreateAccountRequest request, Exception ex) {
         throw handleFallback(ex);
     }
 
-    private List<AccountResponse> getAccountsFallback(String accountNumber, String customerName, String accountNickname, Exception ex) {
+    private List<AccountResponse> getAccountsFallback(String accountNumber, String customerName, String accountNickname, int limit, Exception ex) {
         throw handleFallback(ex);
     }
 

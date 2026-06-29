@@ -71,10 +71,11 @@ class AccountServiceIntegrationTest {
         return req;
     }
 
-    private String cacheKey(String accountNumber, String customerName, String nickname) {
+    private String cacheKey(String accountNumber, String customerName, String nickname, int limit) {
         return "accounts::getAccounts::an=" + (accountNumber != null ? accountNumber : "_")
                 + "|cn=" + (customerName != null ? customerName : "_")
-                + "|nn=" + (nickname != null ? nickname : "_");
+                + "|nn=" + (nickname != null ? nickname : "_")
+                + "|lm=" + limit;
     }
 
     @Test
@@ -97,24 +98,24 @@ class AccountServiceIntegrationTest {
         AccountResponse created = accountService.createAccount(request("Bob Jones", "BobbyJ"));
 
         // when search by customer name (exact, case-insensitive)
-        List<AccountResponse> byName = accountService.getAccounts(null, "bob jones", null);
+        List<AccountResponse> byName = accountService.getAccounts(null, "bob jones", null, 10);
         assertThat(byName).hasSize(1).first().extracting(AccountResponse::getCustomerName).isEqualTo("Bob Jones");
-        assertThat(redisTemplate.hasKey(cacheKey(null, "bob jones", null))).isTrue();
+        assertThat(redisTemplate.hasKey(cacheKey(null, "bob jones", null, 10))).isTrue();
 
         // when search by account number (exact)
-        List<AccountResponse> byNumber = accountService.getAccounts(created.getAccountNumber(), null, null);
+        List<AccountResponse> byNumber = accountService.getAccounts(created.getAccountNumber(), null, null, 10);
         assertThat(byNumber).hasSize(1).first().extracting(AccountResponse::getAccountNumber).isEqualTo(created.getAccountNumber());
-        assertThat(redisTemplate.hasKey(cacheKey(created.getAccountNumber(), null, null))).isTrue();
+        assertThat(redisTemplate.hasKey(cacheKey(created.getAccountNumber(), null, null, 10))).isTrue();
 
         // when search by nickname (prefix)
-        List<AccountResponse> byNickname = accountService.getAccounts(null, null, "Bobby");
+        List<AccountResponse> byNickname = accountService.getAccounts(null, null, "Bobby", 10);
         assertThat(byNickname).hasSize(1).first().extracting(AccountResponse::getAccountNickname).isEqualTo("BobbyJ");
-        assertThat(redisTemplate.hasKey(cacheKey(null, null, "Bobby"))).isTrue();
+        assertThat(redisTemplate.hasKey(cacheKey(null, null, "Bobby", 10))).isTrue();
 
         // when search combined filters
-        List<AccountResponse> combined = accountService.getAccounts(created.getAccountNumber(), "Bob Jones", "BobbyJ");
+        List<AccountResponse> combined = accountService.getAccounts(created.getAccountNumber(), "Bob Jones", "BobbyJ", 10);
         assertThat(combined).hasSize(1);
-        assertThat(redisTemplate.hasKey(cacheKey(created.getAccountNumber(), "Bob Jones", "BobbyJ"))).isTrue();
+        assertThat(redisTemplate.hasKey(cacheKey(created.getAccountNumber(), "Bob Jones", "BobbyJ", 10))).isTrue();
     }
 
     @Test

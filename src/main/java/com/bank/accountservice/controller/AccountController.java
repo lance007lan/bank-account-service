@@ -5,14 +5,18 @@ import com.bank.accountservice.dto.CreateAccountRequest;
 import com.bank.accountservice.service.AccountService;
 import com.bank.accountservice.exception.ValidationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
@@ -29,10 +33,11 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> getAccounts(
             @RequestParam(required = false) String accountNumber,
             @RequestParam(required = false) String customerName,
-            @RequestParam(required = false) String accountNickname) {
+            @RequestParam(required = false) String accountNickname,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit) {
         if (!StringUtils.hasText(accountNumber) && !StringUtils.hasText(customerName) && !StringUtils.hasText(accountNickname)) {
             throw new ValidationException("At least one filter is required: accountNumber, customerName or accountNickname.");
         }
-        return ResponseEntity.ok(accountService.getAccounts(accountNumber, customerName, accountNickname));
+        return ResponseEntity.ok(accountService.getAccounts(accountNumber, customerName, accountNickname, limit));
     }
 }

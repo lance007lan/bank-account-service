@@ -89,7 +89,7 @@ class AccountControllerTest {
                 .customerName("John Smith")
                 .createdAt(LocalDateTime.now())
                 .build();
-        when(accountService.getAccounts(isNull(), eq("John"), isNull())).thenReturn(List.of(item));
+        when(accountService.getAccounts(isNull(), eq("John"), isNull(), eq(10))).thenReturn(List.of(item));
 
         // when
         // then
@@ -100,27 +100,55 @@ class AccountControllerTest {
 
     @Test
     void getAccounts_withAllFilters_returnsOk() throws Exception {
-
         // given
-        when(accountService.getAccounts(eq("06-1234-1234567-50"), eq("John"), eq("JD"))).thenReturn(List.of());
+        when(accountService.getAccounts(eq("06-1234-1234567-50"), eq("John"), eq("JD"), eq(10))).thenReturn(List.of());
 
         // when
         // then
         mockMvc.perform(get("/api/v1/accounts")
                         .param("accountNumber", "06-1234-1234567-50")
                         .param("customerName", "John")
-                        .param("accountNickname","JD"))
+                        .param("accountNickname", "JD"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getAccounts_withNickname_returnsOk() throws Exception {
         // given
-        when(accountService.getAccounts(isNull(), isNull(), eq("JaneyD"))).thenReturn(List.of());
+        when(accountService.getAccounts(isNull(), isNull(), eq("JaneyD"), eq(10))).thenReturn(List.of());
 
         // when
         // then
         mockMvc.perform(get("/api/v1/accounts").param("accountNickname", "JaneyD"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAccounts_withCustomLimit_returnsOk() throws Exception {
+        // given
+        when(accountService.getAccounts(isNull(), eq("John"), isNull(), eq(50))).thenReturn(List.of());
+
+        // when
+        // then
+        mockMvc.perform(get("/api/v1/accounts")
+                        .param("customerName", "John")
+                        .param("limit", "50"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAccounts_limitBelowMin_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts")
+                        .param("customerName", "John")
+                        .param("limit", "0"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAccounts_limitAboveMax_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts")
+                        .param("customerName", "John")
+                        .param("limit", "101"))
+                .andExpect(status().isBadRequest());
     }
 }

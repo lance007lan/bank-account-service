@@ -10,16 +10,18 @@ import java.lang.reflect.Method;
 @Component("accountCacheKeyGenerator")
 public class AccountCacheKeyGenerator implements KeyGenerator {
 
-    enum Param { an, cn, nn }
+    enum Param { an, cn, nn, lm }
 
     @Override
     public Object generate(Object target, Method method, Object... params) {
         String an = params[0] != null ? params[0].toString() : "_";
         String cn = params[1] != null ? params[1].toString() : "_";
         String nn = params[2] != null ? params[2].toString() : "_";
+        String limit = params[3] != null ? params[3].toString() : "_";
         return method.getName() + "::"
                 + Param.an + "=" + an + "|"
                 + Param.cn + "=" + cn + "|"
-                + Param.nn + "=" + nn;
+                + Param.nn + "=" + nn + "|"
+                + Param.lm + "=" + limit;
     }
 }

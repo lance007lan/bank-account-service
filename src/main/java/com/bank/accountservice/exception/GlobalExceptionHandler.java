@@ -1,6 +1,7 @@
 package com.bank.accountservice.exception;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,15 @@ public class GlobalExceptionHandler {
         String message = ex.getCause() instanceof UnrecognizedPropertyException upe
                 ? "Unknown field '" + upe.getPropertyName() + "'. Accepted fields: " + upe.getKnownPropertyIds()
                 : "Malformed JSON request";
+        return ResponseEntity.badRequest().body(
+                ErrorRespBody.builder().status(400).error(message).build());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorRespBody> handleConstraintViolation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(v -> v.getPropertyPath().toString().replaceFirst(".*\\.", "") + ": " + v.getMessage())
+                .collect(Collectors.joining(", "));
         return ResponseEntity.badRequest().body(
                 ErrorRespBody.builder().status(400).error(message).build());
     }
